@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Picture Editor with Shopify Data Editing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            color: #01579b;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #0277bd;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+        input[type="number"], input[type="text"] {
+            margin: 5px 0;
+            padding: 8px;
+            border: 1px solid #0288d1;
+            border-radius: 5px;
+        }
+        #image-container {
+            position: relative;
+            margin: 20px auto;
+            display: inline-block;
+            border: 2px solid #0288d1;
+            border-radius: 10px;
+            overflow: hidden;
+            width: fit-content;
+        }
+        #uploaded-image {
+            max-width: 100%;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+        #overlay-text, .editable-text {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.8);
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+            filter: blur(0.2px);
+            text-shadow: 0.5px 0.5px 1px rgba(255, 255, 255, 0.5);
+        }
+        #overlay-text {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        #date-range {
+            top: 3.3%;
+            left: 8.25%;
+            font-size: 10.5px;
+            font-weight: 450;
+        }
+        #total-sales {
+            top: 21%;
+            left: 6.5%;
+            font-size: 22px;
+            font-weight: 500; 
+        }
+        #store-sessions {
+            top: 21%;
+            right: 31.5%;
+            font-size: 22px;
+            font-weight: 500;
+        }
+        #online-store {
+            top: 34%;
+            left: 32.5%;
+            font-size: 9.5px;
+            font-weight: normal;
+            text-align: left;
+            white-space: nowrap;
+            width: 140px;
+            display: inline-block;
+        }
+        #after-sale {
+            top: 39.5%;
+            left: 34.5%;
+            font-size: 9.5px;
+            font-weight: normal;
+            text-align: left;
+            white-space: nowrap;
+            width: 140px;
+            display: inline-block;
+        }
+        #visitors {
+            top: 34%;
+            right: 1.5%;
+            font-size: 9.5px;
+            font-weight: normal;
+            text-align: left;
+            white-space: nowrap;
+            width: 140px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Picture Editor with Shopify Data Editing</h1>
+
+    <label for="width">Width (px):</label>
+    <input type="number" id="width" placeholder="e.g., 500"><br>
+
+    <label for="height">Height (px):</label>
+    <input type="number" id="height" placeholder="e.g., 400"><br>
+
+    <label for="text">Add Text:</label>
+    <input type="text" id="text" placeholder="Enter text to overlay"><br>
+
+    <button onclick="applyChanges()">Apply Changes</button>
+    <button onclick="downloadImage()">Download Image</button>
+
+    <h2>Edit Shopify Data</h2>
+    <label for="date-range-input">Date Range:</label>
+    <input type="text" id="date-range-input" placeholder="e.g., Jul 27–Dec 13, 2020" maxlength="21" oninput="updateText('date-range')"><br>
+
+    <label for="total-sales-input">Total Sales:</label>
+    <input type="text" id="total-sales-input" placeholder="e.g., $103,189.94" maxlength="13" oninput="validateCurrencyInput('total-sales')"><br>
+
+    <label for="store-sessions-input">Online Store Sessions:</label>
+    <input type="text" id="store-sessions-input" placeholder="e.g., 57519" maxlength="6" oninput="formatNumberInput('store-sessions')"><br>
+
+    <div id="image-container">
+        <img id="uploaded-image" src="D:\Download\shopify.jpg" alt="Shopify Fake">
+        <div id="overlay-text"></div>
+        <div id="date-range" class="editable-text">Jul 27–Dec 13, 2020</div>
+        <div id="total-sales" class="editable-text">$103,189.94</div>
+        <div id="store-sessions" class="editable-text">57,519</div>
+        <div id="online-store" class="editable-text">$101,260.39</div>
+        <div id="after-sale" class="editable-text">$1,929.55</div>
+        <div id="visitors" class="editable-text">55,042</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function applyChanges() {
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const uploadedImage = document.getElementById('uploaded-image');
+
+            if (width) {
+                uploadedImage.style.width = `${width}px`;
+            }
+            if (height) {
+                uploadedImage.style.height = `${height}px`;
+            }
+
+            const overlayText = document.getElementById('overlay-text');
+            overlayText.textContent = document.getElementById('text').value;
+        }
+
+        function updateText(elementId) {
+            const inputValue = document.getElementById(`${elementId}-input`).value;
+            document.getElementById(elementId).textContent = inputValue;
+        }
+
+        function validateCurrencyInput(elementId) {
+            const inputElement = document.getElementById(`${elementId}-input`);
+            let inputValue = inputElement.value.replace(/[^0-9.,]/g, '');
+
+            const decimalIndex = inputValue.indexOf('.');
+            if (decimalIndex !== -1) {
+                inputValue = inputValue.substring(0, decimalIndex + 3);
+            }
+
+            inputElement.value = `$${inputValue}`;
+            document.getElementById(elementId).textContent = inputElement.value;
+        }
+
+        function formatNumberInput(elementId) {
+            const inputElement = document.getElementById(`${elementId}-input`);
+            let rawValue = inputElement.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+            inputElement.value = parseInt(rawValue, 10).toLocaleString();
+            updateText(elementId);
+        }
+
+        function downloadImage() {
+            const container = document.getElementById('image-container');
+            html2canvas(container).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'edited-image.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
